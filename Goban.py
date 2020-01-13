@@ -3,7 +3,6 @@
 '''
 import numpy as np
 
-
 class Goban:
     def __init__(self, size = 5):
         self._size = size
@@ -21,12 +20,20 @@ class Goban:
                 liberty += 1
         return liberty
 
-    def get_legal_moves(self, tk):
+    def get_legal_moves(self):
         """
             Return an array of legal moves
         """
-        pass
+        legal_moves = np.asarray([])
+        for l in range(self._size):
+            for c in range(self._size):
+                if self._grid[l, c] == self._state['_']:
+                    legal_moves = np.append(legal_moves, (l,c))
+        return legal_moves
 
+    def play_move(self, move, player):
+        pass
+        
     def get_neighbors(self, pos):
         """
             Return an array of neighbors
@@ -46,6 +53,8 @@ class Goban:
         """
             Return a boolean that indicate if the move is valid
         """
+        # verify by hash if the board have been already seen
+
         pass
 
         
