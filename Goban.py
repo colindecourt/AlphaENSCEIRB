@@ -3,28 +3,34 @@
 '''
 import numpy as np
 
+
 class Goban:
     def __init__(self, size = 5):
         self._size = size
         self._state = {'B':'X', 'W':'O', '_':'.'}
         self._grid = np.asarray([[self._state['_'] for i in range(self._size)]for j in range(self._size)])
 
-    def get_liberty(self, tk):
-        '''
+    def get_liberty(self, pos):
+        """
             Return the number of degree of liberty
-        '''
-        pass
+        """
+        liberty = 0
+        neighbors = self.get_neighbors(pos)
+        for neigh in neighbors:
+            if neigh == self._state['_']:
+                liberty += 1
+        return liberty
 
     def get_legal_moves(self, tk):
-        '''
+        """
             Return an array of legal moves
-        '''
+        """
         pass
 
-    def get_neighboors(self, tk, pos):
-        '''
-            Return an array of neighboors
-        '''
+    def get_neighbors(self, pos):
+        """
+            Return an array of neighbors
+        """
         l = pos[0]
         c = pos[1]
         neighbors = []
@@ -37,9 +43,9 @@ class Goban:
         return neighbors
 
     def is_valid(self, pos):
-        '''
-            Return a bolean that indicate if the move is valid
-        '''
+        """
+            Return a boolean that indicate if the move is valid
+        """
         pass
 
         
