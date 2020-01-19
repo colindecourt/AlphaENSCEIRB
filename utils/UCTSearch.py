@@ -23,16 +23,19 @@ class Node:
 
     def choose_untried_action(self):
         """
-        Choose randomly a move among legal moves
+        Choose randomly a move among legal moves, not in childrens
         :return: a new board with the new move
         """
-        legal_moves = self.board.legal_moves()
+        children_moves = [c.incoming_action for c in self.children]## NEW
+        legal_moves = []
+        for l_m in self.board.get_legal_moves():
+            if l_m not in children_moves:
+                legal_moves.append(l_m)
         random_move = np.random.randint(0, len(legal_moves))
         move = legal_moves[random_move]
         new_board = copy.deepcopy(self.board)
         new_board.push(move)
         return new_board, move
-
 
 def tree_policy(v):
     """
@@ -40,13 +43,11 @@ def tree_policy(v):
     :param v: a node
     :return: a node
     """
-    while len(v.children) > 0:
-        for node in v.children:
-            # Problem here : must check if v is FULLY EXPANDED
-            if node == v.children[-1]:
-                return expand(v)
-            else:
-                v = best_child(v, CP)
+    while not v.board.is_game_over():
+        if len(v.children) == 0 or len(v.children)<len(v.board.get_legal_moves()):## NEW
+            return expand(v)
+        else:
+            v = best_child(v, CP)
     return v
 
 
@@ -59,6 +60,7 @@ def expand(v):
     # False : use the state associated to know node (incoming action variable)
     new_board, action = v.choose_untried_action()
     vp = Node(v, new_board)
+    # print('New node', vp)
     # Add new node to v
     vp.incoming_action = action
     v.children.append(vp)
@@ -75,13 +77,12 @@ def best_child(v, c=CP):
     max_score = -np.inf
     best_node = None
     for vp in v.children:
-        score = (vp.total_simulation_reward/vp.visit_count)+c*np.sqrt((2*np.log(v.visit_count))/vp.visit_count)
+        score = (vp.total_sim_reward/vp.visit_count)+c*np.sqrt((2*np.log(v.visit_count))/vp.visit_count)
         if score > max_score:
             max_score = score
             best_node = vp
-    print("Best score : ", max_score)
-    move = best_node.board.pop()
-    return move
+            #print("Best score : ", max_score)
+    return best_node
 
 def default_policy(s, color):
     """
@@ -89,13 +90,15 @@ def default_policy(s, color):
     :return: reward for state s
     """
     # Use all the possible state
-    while not s.is_game_over():
-        legal_moves = s.legal_moves()
+    s_copy = copy.deepcopy(s)
+    while not s_copy.is_game_over():
+        legal_moves = s_copy.get_legal_moves()
         random_move = np.random.randint(0, len(legal_moves))
         move = legal_moves[random_move]
-        s.push(move)
-    score = s.get_nb_pieces()[0] - s.get_nb_pieces()[1]
-    return score if color == _BLACK else -score
+        s_copy.push(move)
+    s_copy.pop()
+    score = s_copy.get_nb_pieces()[0] - s_copy.get_nb_pieces()[1]
+    return -score if color == _BLACK else score
 
 
 def backup(v, delta):
@@ -110,13 +113,13 @@ def backup(v, delta):
         v.total_sim_reward = v.total_sim_reward + delta
         v = v.parent
 
-
 def uct_search(board, color=_WHITE, computational_budget = 100):
     v0 = Node(None, board)
-    v = copy.deepcopy(v0)
     while computational_budget > 0:
-        v = tree_policy(v)
-        delta = default_policy(v.board, color)
-        backup(v, delta)
+        vl = tree_policy(v0)
+        delta = default_policy(vl.board, color)
+        backup(vl, delta)
+        #vtemp = vl
         computational_budget -= 1
-    return best_child(v0, 0)
+    # print(v0.children)
+    return best_child(v0, 0).incoming_action
