@@ -30,7 +30,7 @@ class myPlayer():
         return (x,y) 
 
     def playOpponentMove(self, x,y):
-        assert(self._board.is_valid_move(self._opponent, x, y))
+        assert(self._board.is_valid_move(self._opponent, [x, y]))
         print("Opponent played ", (x,y))
         self._board.push([self._opponent, x, y])
 

@@ -76,11 +76,11 @@ def run_local_game(ai1, ai2, goban_size = 9):
         totalTime[nextplayer] += time.time() - currentTime
         print("Player ", nextplayercolor, players[nextplayer].getPlayerName(), "plays" + str(move))
         (x,y) = move
-        if not b.is_valid_move(nextplayercolor,x,y):
+        if not b.is_valid_move(nextplayercolor,[x,y]):
             print(otherplayer, nextplayer, nextplayercolor)
             print("Problem: illegal move")
             break
-        b.push((x, y), nextplayercolor)
+        b.push([nextplayercolor, x, y])
         players[otherplayer].playOpponentMove(x,y)
 
         nextplayer = otherplayer

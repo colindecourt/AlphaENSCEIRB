@@ -62,8 +62,10 @@ class Go:
         legal_moves = []
         for l in range(self._goban_size):
             for c in range(self._goban_size):
-                if self._goban[l, c] == self._EMPTY:
-                    legal_moves.append([l,c])
+                if self.is_valid_move(self._nextPlayer, [l,c]):
+                    legal_moves.append([self._nextPlayer, l,c])
+        if len(legal_moves) is 0:
+            moves = [[self._nextPlayer, -1, -1]]
         return legal_moves
 
     def get_neighbors(self, pos):
@@ -80,7 +82,8 @@ class Go:
                         if not(l+L == -1 or l+L > self._goban_size-1 or c+C == -1 or c+C > self._goban_size-1):
                             neighbors.append(np.array([l+L, c+C]))
         return neighbors
-
+    def get_nb_pieces(self):
+      return (self._nbWHITE, self._nbBLACK)
     def _is_on_board(self, pos):
         return pos[0] >= 0 and pos[0] < self._goban_size-1 and pos[1] >= 0 and pos[1] < self._goban_size-1
 
@@ -89,7 +92,7 @@ class Go:
         # self.place_token(pos, player)
         return True
 
-    def _is_valid_move(self, pos, player):
+    def is_valid_move(self, player, pos):
         # verify by hash if the board have been already seen
         isAlreadySeen = not self._is_never_seen(pos, player)
         if isAlreadySeen:
@@ -107,6 +110,12 @@ class Go:
 
     def place_token(self, pos, player):
         self._goban[pos[0],pos[1]] = player
+        if player == self._BLACK:
+            self._nbBLACK += 1
+            self._nextPlayer = self._WHITE
+        else:
+            self._nbWHITE += 1
+            self._nextPlayer = self._BLACK
 
     #TO DO
     def push(self, move):
@@ -114,14 +123,18 @@ class Go:
         ### Random choice
         # move = legal_moves[np.random.randint(0, legal_moves.count)]
         [player, pos] = [move[0], move[1:]]
-        if self._is_valid_move(pos, player):
-            self.place_token(pos, player)
+        if pos[0]==-1 and pos[1]==-1: # pass
+            self._nextPlayer = self._flip(player)
+            self._stack.append([move, self._successivePass])
+            self._successivePass += 1
         else:
-            exp = ""
-            raise Exception("Invalid move:"+exp)
+            self._stack.append([move, self._successivePass])
+            self._successivePass = 0
+            self.place_token(pos, player)
+            self.
 
     def is_game_over(self):
-        if self._nb_move < self._MAX_MOVE:
+        if self._nb_move < self._MAX_MOVE and len(self.get_legal_moves())!=0:
             self._nbBLACK = self.count_corner(self._BLACK)
             self._nbWHITE = self.count_corner(self._WHITE)
             if self._nbWHITE + self._nbBLACK == (self._goban_size*self._goban_size):
