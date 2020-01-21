@@ -3,6 +3,7 @@ class Token:
         self.name = name
         self.color = color
         self.parent = self
+        self.sons = []
         self.rang = 0
 
     def __str__(self):

@@ -1,7 +1,7 @@
 '''
     https://fr.wikipedia.org/wiki/Union-find
 '''
-
+import copy
 class UnionFind:
     def __init__(self):
         pass
@@ -15,6 +15,9 @@ class UnionFind:
     @staticmethod
     def find(x):
         if x.parent != x:
+            for son in x.sons:
+                if son not in x.parent.sons:
+                    x.parent.sons.append(son)
             x.parent = UnionFind.find(x.parent)
         return x.parent
 
@@ -25,8 +28,12 @@ class UnionFind:
         if xRacine != yRacine:
             if xRacine.rang < yRacine.rang:
                 xRacine.parent = yRacine
+                yRacine.sons.append(xRacine)
+                if yRacine.rang == xRacine.rang:
+                    yRacine.rang += 1
             else:
                 yRacine.parent = xRacine
+                xRacine.sons.append(yRacine)
                 if xRacine.rang == yRacine.rang:
                     xRacine.rang += 1
         
@@ -42,12 +49,12 @@ def run_test():
     #     uf.make_set(tk)
     
     uf.union(a, b)
-    uf.union(a, f)
+    # uf.union(a, f)
     uf.union(c, d)
-    uf.union(c, e)
+    # uf.union(c, e)
     uf.union(a, c)
 
-    # [uf.find(tk) for tk in Tokens]
+    [uf.find(tk) for tk in Tokens]
     # uf.find(d)
     # uf.find(e)
     print('a.rang',a.rang)
@@ -59,8 +66,10 @@ def run_test():
     # print('c',c)
     print('c.parent',c.parent)
     print('d.parent',d.parent)
-    print('e.parent',e.parent)
+    print('a.sons',a.sons)
+    # print(a.sons[3]==a.sons[2])
+    # print('e.parent',e.parent)
     # assert a == d.parent
     # assert c.parent == d.parent
 
-# run_test()
+run_test()
