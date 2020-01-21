@@ -72,4 +72,4 @@ def run_test():
     # assert a == d.parent
     # assert c.parent == d.parent
 
-run_test()
+# run_test()

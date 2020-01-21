@@ -7,6 +7,6 @@ class Token:
         self.rang = 0
 
     def __str__(self):
-        return 'TK({})'.format(self.name)
+        return 'TK({}.{})'.format(self.color, self.name)
 
     __repr__ = __str__

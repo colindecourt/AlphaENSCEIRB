@@ -23,6 +23,7 @@ class Go:
         self._stack= []
         self._successivePass = 0
         self._nb_move = 0
+        self._points = {self._BLACK:0, self._WHITE:0}
 
     def reset(self):
         self.__init__()
@@ -45,11 +46,30 @@ class Go:
         _boardC[_boardC.color == self._WHITE] = self._state['W']
         return _boardC
 
-    def get_uf_liberty(self, tk):
+    def is_uf_liberty(self, tk):
         """
             Return the number of degree of liberty
         """
         liberty = 0
+        tk_root = tk.parent
+        to_study = [tk_root]
+        to_study.extend(tk_root.sons)
+        for _tk in to_study:
+            _tk_pos = [int(_tk.name[0]),int(_tk.name[1])]
+            for _tk_neigh in self.get_neighbors(_tk_pos):
+                if self._goban[_tk_neigh[0], _tk_neigh[1]].color == self._EMPTY:
+                    liberty += 1
+                else:
+                    print(self)
+                    print(tk)
+                    print('l')
+
+        # print(liberty)
+        if liberty == 0:
+            return False, to_study
+        else:
+            return True, to_study
+
         # uf_tree = [[_tk if _tk.parent == tk else None for _tk in l] for l in self._goban]
         # a = []
         # for l in self._goban:
@@ -57,13 +77,12 @@ class Go:
         #         if _tk.parent == tk:
         #             a.append(_tk)
         # find an algorithm deg(ab)= deg(a)+deg(b)-2
-        pos = [int(tk.name[0]),int(tk.name[1])]
-        # def get_liberty(self, pos):
-        neighbors = self.get_neighbors(pos)
-        for neigh in neighbors:
-            if self._goban[neigh[0], neigh[1]].color == self._EMPTY:
-                liberty += 1
-        return liberty
+        # pos = [int(tk.name[0]),int(tk.name[1])]
+        # # def get_liberty(self, pos):
+        # neighbors = self.get_neighbors(pos)
+        # for neigh in neighbors:
+        #     if self._goban[neigh[0], neigh[1]].color == self._EMPTY:
+        #         liberty += 1
 
     def get_legal_moves(self):
         """
@@ -92,8 +111,10 @@ class Go:
                         if not(l+L == -1 or l+L > self._goban_size-1 or c+C == -1 or c+C > self._goban_size-1):
                             neighbors.append(np.array([l+L, c+C]))
         return neighbors
+
     def get_nb_pieces(self):
       return (self._nbWHITE, self._nbBLACK)
+
     def _is_on_board(self, pos):
         return pos[0] >= 0 and pos[0] < self._goban_size and pos[1] >= 0 and pos[1] < self._goban_size
 
@@ -115,8 +136,10 @@ class Go:
                 return True
 
     #TO DO
-    def capture_token(self):
-        pass
+    def capture_token(self, to_capture):
+        for tk in to_capture:
+            tk.color = self._EMPTY
+            self._points[self._nextPlayer] +=1
 
     def place_token(self, pos, player):
         self._goban[pos[0],pos[1]].color = player
@@ -126,21 +149,19 @@ class Go:
             tk = self._goban[tk_pos[0],tk_pos[1]]
             if tk.color == player:
                 self.uf.union(tk, self._goban[pos[0],pos[1]])
+                # Flatten the tree
+                [[self.uf.find(tk) for tk in l]for l in self._goban]
             elif tk.color == self._flip(player):
-                if self.get_uf_liberty(tk)==0:
+                is_liberty, to_capture = self.is_uf_liberty(tk)
+                if not is_liberty:
                     print(self)
                     print(player,pos)
-                    print(tk_pos)
+                    print(tk)
+                    print('')
+                    self.capture_token(to_capture)
                     # to_capture.append(tk)
             else:
                 pass
-        # Flatten the tree
-        [[self.uf.find(tk) for tk in l]for l in self._goban]
-
-        if len(to_capture)!=0:
-            print(self)
-            print(pos)
-            self.capture_token()
 
         if player == self._BLACK:
             self._nbBLACK += 1

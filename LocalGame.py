@@ -26,7 +26,7 @@ def args_to_object(arg):
     else:
         print("Invalid AI name")
 
-def run_local_game(ai1, ai2, goban_size = 9):
+def run_local_game(ai1, ai2, goban_size = 5):
     '''
 
     :param ai1: first AI type
@@ -37,12 +37,12 @@ def run_local_game(ai1, ai2, goban_size = 9):
     b = Go(goban_size)
 
     players = []
-    player1 = ai1.myPlayer()
+    player1 = ai1.myPlayer(goban_size)
     print('Player 1 uses', player1._my_ai)
     # player1 = myPlayer.myPlayer()
     player1.newGame(b._BLACK)
     players.append(player1)
-    player2 = ai2.myPlayer()
+    player2 = ai2.myPlayer(goban_size)
     print('Player 2 uses', player2._my_ai)
     player2.newGame(b._WHITE)
     players.append(player2)

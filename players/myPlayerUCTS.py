@@ -4,8 +4,8 @@ from utils.Go import *
 from utils.UCTSearch import *
 
 class myPlayer():
-    def __init__(self):
-        self._board = Go()
+    def __init__(self, goban_size = 9):
+        self._board = Go(goban_size)
         self._mycolor = None
         self._memoire = {}
         self._my_ai = 'UCT Search algorithm'
