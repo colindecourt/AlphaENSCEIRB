@@ -19,7 +19,7 @@ class Go:
         self._goban_size = goban_size
         self._state = {'B':'X', 'W':'O', '_':'.'}
         self._goban = np.asarray([[TK.Token(name = '{}{}'.format(i,j),color=self._EMPTY) for j in range(self._goban_size)]for i in range(self._goban_size)])
-        self._past_goban = np.asarray([])
+        self._past_goban = []
         self._stack= []
         self._successivePass = 0
         self._nb_move = 0
@@ -59,30 +59,12 @@ class Go:
             for _tk_neigh in self.get_neighbors(_tk_pos):
                 if self._goban[_tk_neigh[0], _tk_neigh[1]].color == self._EMPTY:
                     liberty += 1
-                else:
-                    print(self)
-                    print(tk)
-                    print('l')
 
         # print(liberty)
         if liberty == 0:
             return False, to_study
         else:
             return True, to_study
-
-        # uf_tree = [[_tk if _tk.parent == tk else None for _tk in l] for l in self._goban]
-        # a = []
-        # for l in self._goban:
-        #     for _tk in l:
-        #         if _tk.parent == tk:
-        #             a.append(_tk)
-        # find an algorithm deg(ab)= deg(a)+deg(b)-2
-        # pos = [int(tk.name[0]),int(tk.name[1])]
-        # # def get_liberty(self, pos):
-        # neighbors = self.get_neighbors(pos)
-        # for neigh in neighbors:
-        #     if self._goban[neigh[0], neigh[1]].color == self._EMPTY:
-        #         liberty += 1
 
     def get_legal_moves(self):
         """
@@ -120,26 +102,34 @@ class Go:
 
     #TO DO
     def _is_never_seen(self, pos, player):
-        # self.place_token(pos, player)
-        return True
+        game_copy = copy.deepcopy(self)
+        game_copy.push([player, pos[0], pos[1]])
+        hashed_goban = hash(str(game_copy._goban))
+        if hashed_goban in self._past_goban:
+            return False
+        else:
+            return True
 
     def is_valid_move(self, player, pos):
         # verify by hash if the board have been already seen
-        isAlreadySeen = not self._is_never_seen(pos, player)
-        if isAlreadySeen:
-            return False
+        # False if there is already a token or out of the board 
+        if not self._is_on_board(pos) or self._goban[pos[0],pos[1]].color != self._EMPTY:
+            isAlreadySeen = not self._is_never_seen(pos, player)
+            # if isAlreadySeen:
+            #     print(pos)
+            return not isAlreadySeen
         else:
-            # False if there is already a token or out of the board 
-            if not self._is_on_board(pos) or self._goban[pos[0],pos[1]].color != self._EMPTY:
-                return False
-            else:
-                return True
+            return True
 
     #TO DO
     def capture_token(self, to_capture):
         for tk in to_capture:
             tk.color = self._EMPTY
             self._points[self._nextPlayer] +=1
+            if self._nextPlayer == self._BLACK:
+                self._nbWHITE -= 1
+            else:
+                self._nbBLACK -= 1
 
     def place_token(self, pos, player):
         self._goban[pos[0],pos[1]].color = player
@@ -154,15 +144,13 @@ class Go:
             elif tk.color == self._flip(player):
                 is_liberty, to_capture = self.is_uf_liberty(tk)
                 if not is_liberty:
-                    print(self)
-                    print(player,pos)
-                    print(tk)
-                    print('')
                     self.capture_token(to_capture)
                     # to_capture.append(tk)
             else:
                 pass
 
+        hashed_goban = hash(str(self._goban))
+        self._past_goban.append(hashed_goban)
         if player == self._BLACK:
             self._nbBLACK += 1
             self._nextPlayer = self._WHITE

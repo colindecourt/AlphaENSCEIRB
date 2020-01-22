@@ -113,7 +113,7 @@ def backup(v, delta):
         v.total_sim_reward = v.total_sim_reward + delta
         v = v.parent
 
-def uct_search(board, color=_WHITE, computational_budget = 100):
+def uct_search(board, color=_WHITE, computational_budget = 10):
     v0 = Node(None, board)
     while computational_budget > 0:
         vl = tree_policy(v0)
