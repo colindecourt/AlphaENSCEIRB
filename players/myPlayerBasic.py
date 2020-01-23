@@ -13,10 +13,11 @@ class myPlayer():
         return "Random Player"
 
     def getPlayerMove(self):
-        if self._board.is_game_over():
+        is_g_over = self._board.is_game_over()
+        if is_g_over:
             print("Referee told me to play but the game is over!")
             return (-1,-1)
-        moves = [m for m in self._board.get_legal_moves()]
+        moves = self._board.get_legal_moves()
         move = moves[randint(0,len(moves)-1)]
         self._board.push(move)
         print("I am playing ", move)

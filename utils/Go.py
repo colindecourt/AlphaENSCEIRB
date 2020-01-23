@@ -10,7 +10,7 @@ class Go:
     _BLACK = 1
     _WHITE = 2
     _EMPTY = 0
-    _MAX_MOVE = 300
+    
     uf = UF.UnionFind()
     def __init__(self, goban_size=9):
         self._nbWHITE = 0
@@ -24,6 +24,7 @@ class Go:
         self._successivePass = 0
         self._nb_move = 0
         self._points = {self._BLACK:0, self._WHITE:0}
+        self._MAX_MOVE = goban_size * goban_size * goban_size
 
     def reset(self):
         self.__init__()
@@ -39,13 +40,6 @@ class Go:
     def get_goban(self):
         return self._goban
 
-    def get_goban_state(self, board):
-        _boardC = copy.deepcopy(board)
-        _boardC[_boardC.color == self._EMPTY] = self._state['_']
-        _boardC[_boardC.color == self._BLACK] = self._state['B']
-        _boardC[_boardC.color == self._WHITE] = self._state['W']
-        return _boardC
-
     def is_uf_liberty(self, tk):
         """
             Return the number of degree of liberty
@@ -60,7 +54,6 @@ class Go:
                 if self._goban[_tk_neigh[0], _tk_neigh[1]].color == self._EMPTY:
                     liberty += 1
 
-        # print(liberty)
         if liberty == 0:
             return False, to_study
         else:
@@ -113,18 +106,16 @@ class Go:
     def is_valid_move(self, player, pos):
         # verify by hash if the board have been already seen
         # False if there is already a token or out of the board 
-        if not self._is_on_board(pos) or self._goban[pos[0],pos[1]].color != self._EMPTY:
-            isAlreadySeen = not self._is_never_seen(pos, player)
-            # if isAlreadySeen:
-            #     print(pos)
-            return not isAlreadySeen
+        if self._is_on_board(pos) and self._goban[pos[0],pos[1]].color == self._EMPTY:
+            is_never_seen = self._is_never_seen(pos, player)
+            return is_never_seen
         else:
-            return True
+            return False
 
     #TO DO
     def capture_token(self, to_capture):
         for tk in to_capture:
-            tk.color = self._EMPTY
+            tk.__init__(name = tk.name,color=self._EMPTY)
             self._points[self._nextPlayer] +=1
             if self._nextPlayer == self._BLACK:
                 self._nbWHITE -= 1
@@ -134,8 +125,10 @@ class Go:
     def place_token(self, pos, player):
         self._goban[pos[0],pos[1]].color = player
         tk_pos_neigh = self.get_neighbors(pos)
-        to_capture = []
-        for tk_pos in tk_pos_neigh:
+        i = 0
+        while len(tk_pos_neigh) > 0 and i<len(tk_pos_neigh):
+            to_capture = []
+            tk_pos = tk_pos_neigh[i]
             tk = self._goban[tk_pos[0],tk_pos[1]]
             if tk.color == player:
                 self.uf.union(tk, self._goban[pos[0],pos[1]])
@@ -145,9 +138,10 @@ class Go:
                 is_liberty, to_capture = self.is_uf_liberty(tk)
                 if not is_liberty:
                     self.capture_token(to_capture)
-                    # to_capture.append(tk)
             else:
                 pass
+            tk_pos_neigh.pop(i)
+            i += 1
 
         hashed_goban = hash(str(self._goban))
         self._past_goban.append(hashed_goban)
@@ -173,22 +167,23 @@ class Go:
             self.place_token(pos, player)
 
     def is_game_over(self):
-        if self._nb_move < self._MAX_MOVE and len(self.get_legal_moves())!=0:
-            # self._nbBLACK = self.count_corner(self._BLACK)
-            # self._nbWHITE = self.count_corner(self._WHITE)
-            if self._nbWHITE + self._nbBLACK == (self._goban_size*self._goban_size):
+        if self._nb_move < self._MAX_MOVE:# and len(legal_moves)!=0:
+            if self._nbWHITE + self._nbBLACK >= (self._goban_size*self._goban_size):
                 return True
             else:
-                False
+                return False
         else:
             return True
-    def count_corner(self, player) :
-        count = 0
-        for i in range(self._goban_size-1) :
-            for j in range(self._goban_size-1) :
-                if self._goban[i][j].color == player :
-                    count += 1
-        return count
+    def count_corner(self) :
+        count_b = 0
+        count_w = 0
+        for i in range(self._goban_size) :
+            for j in range(self._goban_size) :
+                if self._goban[i][j].color == self._WHITE :
+                    count_w += 1
+                elif self._goban[i][j].color == self._BLACK :
+                    count_b += 1
+        return count_w, count_b
 
     def _piece2str(self, c):
         if c==self._WHITE:
@@ -208,5 +203,8 @@ class Go:
         toreturn += str(self._nbBLACK) + " blacks and " + str(self._nbWHITE) + " whites on board\n"
         toreturn += "(successive pass: " + str(self._successivePass) + " )"
         return toreturn
-
+    def print_debug(self):
+        print("*"*20)
+        print(self)
+        print("*"*20)
     __repr__ = __str__

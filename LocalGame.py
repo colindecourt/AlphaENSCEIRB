@@ -87,11 +87,19 @@ def run_local_game(ai1, ai2, goban_size = 5):
         nextplayercolor = othercolor
 
         print(b)
-
+        # print("*"*10)
+        # (nbwhites, nbblacks) = b.get_nb_pieces()
+        # print(nbblacks, nbwhites)
+        # [nbwhites, nbblacks] = b.count_corner()
+        # print(nbblacks, nbwhites)
+        # print("*"*10)
     print("The game is over")
     print(b)
 
     (nbwhites, nbblacks) = b.get_nb_pieces()
+    print(nbblacks, nbwhites)
+    [nbwhites, nbblacks] = b.count_corner()
+    print(nbblacks, nbwhites)
     print("Time:", totalTime)
     print("Winner: ", end="")
     if nbwhites > nbblacks:

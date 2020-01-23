@@ -14,9 +14,9 @@ class myPlayer():
         return "MCTS - UCT Search"
 
     def getPlayerMove(self):
-        if self._board.is_game_over():
-            print("Referee told me to play but the game is over!")
-            return (-1,-1)
+        # if self._board.is_game_over():
+        #     print("Referee told me to play but the game is over!")
+        #     return (-1,-1)
 
         # moves = [m for m in self._board.legal_moves()]
         #move = moves[randint(0,len(moves)-1)]
