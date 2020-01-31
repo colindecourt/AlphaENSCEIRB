@@ -4,7 +4,8 @@
 import numpy as np
 import copy
 
-from utils import Token as TK, UnionFind as UF
+import Token as TK
+import UnionFind as UF
 
 class Go:
     _BLACK = 1
@@ -203,8 +204,10 @@ class Go:
         toreturn += str(self._nbBLACK) + " blacks and " + str(self._nbWHITE) + " whites on board\n"
         toreturn += "(successive pass: " + str(self._successivePass) + " )"
         return toreturn
+
     def print_debug(self):
         print("*"*20)
         print(self)
         print("*"*20)
+
     __repr__ = __str__
